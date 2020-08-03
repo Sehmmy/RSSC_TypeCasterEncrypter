@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -29,6 +29,16 @@ namespace RSSC_TypeCasterEncrypter
         /// <param name="oldValue"> Previous value of the changed property. </param>
         public override void OnPropertyValueChanged(SmartComponent component, DynamicProperty changedProperty, Object oldValue)
         {
+            double GrabTheData; 
+            
+            if (changedProperty.Name == "SampleProperty")
+            {
+                GrabTheData = (double)changedProperty.Value;
+
+                component.IOSignals["GroupOutput"].Value = changedProperty.Value;
+                Logger.AddMessage(new LogMessage("input changed to: "+GrabTheData.ToString()));
+            }
+            Logger.AddMessage(new LogMessage("Executed OnPropertyValueChanged"));
         }
 
         /// <summary>
@@ -38,6 +48,17 @@ namespace RSSC_TypeCasterEncrypter
         /// <param name="changedSignal"> Changed signal. </param>
         public override void OnIOSignalValueChanged(SmartComponent component, IOSignal changedSignal)
         {
+            switch (changedSignal.Name)
+            {
+                case "DigitalInput":
+                    component.IOSignals["DigitalOutput"].Value = changedSignal.Value;
+                    Logger.AddMessage(new LogMessage("Someone just pressed DigitalInput!"));
+                    break;
+                default:
+                    Logger.AddMessage(new LogMessage("not recognised"));
+                    break;
+            }
+            Logger.AddMessage(new LogMessage("finished OnIOSignalValueChanged"));
         }
 
         /// <summary>
