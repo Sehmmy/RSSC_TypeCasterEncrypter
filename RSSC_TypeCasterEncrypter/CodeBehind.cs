@@ -19,6 +19,7 @@ namespace RSSC_TypeCasterEncrypter
     /// Therefore, the code-behind class should not store any state information.
     /// Instead, use the SmartComponent.StateCache collection.
     /// </remarks>
+    /// 
     public class CodeBehind : SmartComponentCodeBehind
     {
         /// <summary>
@@ -29,14 +30,12 @@ namespace RSSC_TypeCasterEncrypter
         /// <param name="oldValue"> Previous value of the changed property. </param>
         public override void OnPropertyValueChanged(SmartComponent component, DynamicProperty changedProperty, Object oldValue)
         {
-            double GrabTheData; 
-            
-            if (changedProperty.Name == "SampleProperty")
-            {
-                GrabTheData = (double)changedProperty.Value;
 
-                component.IOSignals["GroupOutput"].Value = changedProperty.Value;
-                Logger.AddMessage(new LogMessage("input changed to: "+GrabTheData.ToString()));
+            switch (changedProperty.Name)
+            {
+                case "InputProp":
+                    component.IOSignals["GroupOutput"].Value = ToHexEncodedInt((double)changedProperty.Value);
+                    break;
             }
             Logger.AddMessage(new LogMessage("Executed OnPropertyValueChanged"));
         }
@@ -50,12 +49,11 @@ namespace RSSC_TypeCasterEncrypter
         {
             switch (changedSignal.Name)
             {
-                case "DigitalInput":
-                    component.IOSignals["DigitalOutput"].Value = changedSignal.Value;
-                    Logger.AddMessage(new LogMessage("Someone just pressed DigitalInput!"));
+                case "GroupInput":
+                    component.Properties["OutputProp"].Value = FromHexString((int)changedSignal.Value);
                     break;
                 default:
-                    Logger.AddMessage(new LogMessage("not recognised"));
+                    Logger.AddMessage(new LogMessage("not recognised IO signal change"));
                     break;
             }
             Logger.AddMessage(new LogMessage("finished OnIOSignalValueChanged"));
@@ -73,6 +71,37 @@ namespace RSSC_TypeCasterEncrypter
         /// </remarks>
         public override void OnSimulationStep(SmartComponent component, double simulationTime, double previousTime)
         {
+        }
+
+        string ToHexString(double f)
+        {
+            var bytes = BitConverter.GetBytes(Convert.ToSingle(f));
+            var i = BitConverter.ToInt32(bytes, 0);
+            return "0x" + i.ToString("X8");
+
+        }
+
+        float FromHexString(string s)
+        {
+            var i = Convert.ToInt32(s, 16);
+            var bytes = BitConverter.GetBytes(i);
+            return BitConverter.ToSingle(bytes, 0);
+        }
+
+
+        // used to encode a REAL in an integer
+        int ToHexEncodedInt(double f)
+        {
+            var bytes = BitConverter.GetBytes(Convert.ToSingle(f));
+            return BitConverter.ToInt32(bytes, 0);
+        }
+
+        //  use to get a double from an encoded integer
+        double FromHexString(int Real)
+        {
+            var bytes = BitConverter.GetBytes(Real);
+            //int i2 = BitConverter.ToSingle(bytes, 0);
+            return BitConverter.ToSingle(bytes, 0);
         }
     }
 }
