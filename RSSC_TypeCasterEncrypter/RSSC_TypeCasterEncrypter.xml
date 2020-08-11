@@ -23,8 +23,14 @@
       <Bindings>
       </Bindings>
       <Signals>
-        <IOSignal name = "GroupInput" signalType="DigitalGroupInput"/>
-        <IOSignal name = "GroupOutput" signalType="DigitalGroupOutput"/>
+        <IOSignal name = "GroupInputMSB" signalType="DigitalGroupInput"/>
+        <IOSignal name = "GroupInputB3" signalType="DigitalGroupInput"/>
+        <IOSignal name = "GroupInputB2" signalType="DigitalGroupInput"/>
+        <IOSignal name = "GroupInputLSB" signalType="DigitalGroupInput"/>
+        <IOSignal name = "GroupOutputMSB" signalType="DigitalGroupOutput"/>
+        <IOSignal name = "GroupOutputB3" signalType="DigitalGroupOutput"/>
+        <IOSignal name = "GroupOutputB2" signalType="DigitalGroupOutput"/>
+        <IOSignal name = "GroupOutputLSB" signalType="DigitalGroupOutput"/>
       </Signals>
       <GraphicComponents>
       </GraphicComponents>

@@ -1,7 +1,7 @@
 ﻿﻿using System;
 using System.Collections.Generic;
 using System.Text;
-
+using System.Linq;
 using ABB.Robotics.Math;
 using ABB.Robotics.RobotStudio;
 using ABB.Robotics.RobotStudio.Stations;
@@ -22,6 +22,8 @@ namespace RSSC_TypeCasterEncrypter
     /// 
     public class CodeBehind : SmartComponentCodeBehind
     {
+        bool[] check = new bool[4];
+
         /// <summary>
         /// Called when the value of a dynamic property value has changed.
         /// </summary>
@@ -34,7 +36,12 @@ namespace RSSC_TypeCasterEncrypter
             switch (changedProperty.Name)
             {
                 case "InputProp":
-                    component.IOSignals["GroupOutput"].Value = ToHexEncodedInt((double)changedProperty.Value);
+                    int bitVal = ToHexEncodedInt((double)changedProperty.Value);
+               
+                    component.IOSignals["GroupOutputMSB"].Value = (bitVal & 0xFF000000) >> 24;
+                    component.IOSignals["GroupOutputB3"].Value = (bitVal & 0x00FF0000) >> 16;
+                    component.IOSignals["GroupOutputB2"].Value = (bitVal & 0x0000FF00) >> 8;
+                    component.IOSignals["GroupOutputLSB"].Value = (bitVal & 0x000000FF);
                     break;
             }
             Logger.AddMessage(new LogMessage("Executed OnPropertyValueChanged"));
@@ -49,8 +56,17 @@ namespace RSSC_TypeCasterEncrypter
         {
             switch (changedSignal.Name)
             {
-                case "GroupInput":
-                    component.Properties["OutputProp"].Value = FromHexString((int)changedSignal.Value);
+                case "GroupInputMSB":
+                    UpdateOutProp(component);
+                    break;
+                case "GroupInputB3":
+                    UpdateOutProp(component);
+                    break;
+                case "GroupInputB2":
+                    UpdateOutProp(component);
+                    break;  
+                case "GroupInputLSB":
+                    UpdateOutProp(component);
                     break;
                 default:
                     Logger.AddMessage(new LogMessage("not recognised IO signal change"));
@@ -102,6 +118,13 @@ namespace RSSC_TypeCasterEncrypter
             var bytes = BitConverter.GetBytes(Real);
             //int i2 = BitConverter.ToSingle(bytes, 0);
             return BitConverter.ToSingle(bytes, 0);
+        }
+
+        // converts 4 bytes into one long float value
+        void UpdateOutProp(SmartComponent component)
+        {
+            int bitVal = (int)component.IOSignals["GroupInputLSB"].Value + ((int)component.IOSignals["GroupInputB2"].Value << 8) + ((int)component.IOSignals["GroupInputB3"].Value << 16) + ((int)component.IOSignals["GroupInputMSB"].Value << 24);
+            component.Properties["OutputProp"].Value = FromHexString(bitVal);
         }
     }
 }
